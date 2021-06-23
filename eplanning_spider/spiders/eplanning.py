@@ -25,7 +25,7 @@ class EplanningSpider(Spider):
         yield FormRequest.from_response(
             response,
             formdata={
-                'RdoTimeLimit': '42'
+                'RdoTimeLimit': '7'
             },
             dont_filter=True,
             formxpath='(//form)[2]',
@@ -33,7 +33,7 @@ class EplanningSpider(Spider):
         )
 
     def parse_pages(self, response):
-        application_url = response.xpath('//td/a').extract()
+        application_url = response.xpath('//td/a/@href').extract()
         for url in application_url:
             url = response.urljoin(url)
             yield Request(url , callback = self.parse_items)
@@ -43,5 +43,9 @@ class EplanningSpider(Spider):
             yield Request(absolute_url,callback=self.parse_pages)
 
     def parse_items(self,response):
-        pass
+        agent_btn = response.xpath('//*[@value ="Agents"]/@style').extract_first()
+        if agent_btn and 'visibility: visible' in agent_btn:
+            self.logger.info('Agent btn found')
+        else:
+            self.logger.info('Agent button not found on page, passing invalid url')
 
