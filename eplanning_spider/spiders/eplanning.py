@@ -33,4 +33,15 @@ class EplanningSpider(Spider):
         )
 
     def parse_pages(self, response):
+        application_url = response.xpath('//td/a').extract()
+        for url in application_url:
+            url = response.urljoin(url)
+            yield Request(url , callback = self.parse_items)
+        next_page_url = response.xpath('//a[@rel="next"]/@href').extract_first()
+        if next_page_url :
+            absolute_url = response.urljoin(next_page_url)
+            yield Request(absolute_url,callback=self.parse_pages)
+
+    def parse_items(self,response):
         pass
+
